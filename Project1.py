@@ -12,8 +12,14 @@ class ScraperApp(QtWidgets.QMainWindow):
         self.entities = []  # Will store the scraped data
     
     def initUI(self):
-        self.setWindowTitle("Entity Scraper")
+        self.setWindowTitle("WEB SCRAPER")
         self.setGeometry(100, 100, 800, 600)
+        # change the background color
+        self.setAutoFillBackground(True)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(222, 184, 135))
+        self.setPalette(p)
+        
 
         # Input field for URL
         self.url_label = QtWidgets.QLabel("URL:", self)
