@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import random
 from operator import itemgetter
 
+
 class ScraperApp(QtWidgets.QMainWindow):
     def __init__(self):
         super(ScraperApp, self).__init__()
@@ -83,15 +84,27 @@ class ScraperApp(QtWidgets.QMainWindow):
         self.url_input = QtWidgets.QLineEdit()
         self.url_input.setStyleSheet("padding: 5px; font-size: 14px;")
 
+        # Attributes selection (CheckBoxes)
+        self.attribute_label = QtWidgets.QLabel("Select Attributes to Scrape:")
+        self.attribute_label.setStyleSheet("font-size: 16px; color: #8B4513;")
+
+        self.attribute_checkboxes = []
+        for attr in ["ID", "Name", "Category", "Price", "Stock", "Rating", "Date"]:
+            checkbox = QtWidgets.QCheckBox(attr)
+            self.attribute_checkboxes.append(checkbox)
+
         # Start, pause, resume buttons
         self.start_btn = QtWidgets.QPushButton("Start Scraping")
         self.start_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.start_btn.clicked.connect(self.start_scraping)
 
         self.pause_btn = QtWidgets.QPushButton("Pause")
         self.pause_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.pause_btn.clicked.connect(self.pause_scraping)
 
         self.resume_btn = QtWidgets.QPushButton("Resume")
         self.resume_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.resume_btn.clicked.connect(self.resume_scraping)
 
         # Progress bar
         self.progress = QtWidgets.QProgressBar()
@@ -99,11 +112,18 @@ class ScraperApp(QtWidgets.QMainWindow):
         # Navigation button to go to sorting page
         self.go_to_sort_btn = QtWidgets.QPushButton("Go to Sorting Page")
         self.go_to_sort_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.go_to_sort_btn.clicked.connect(lambda: self.central_widget.setCurrentWidget(self.sorting_page))
 
         # Add widgets to layout with proper spacing
         layout.addStretch()
         layout.addWidget(self.url_label)
         layout.addWidget(self.url_input)
+        layout.addSpacing(10)
+        layout.addWidget(self.attribute_label)
+
+        for checkbox in self.attribute_checkboxes:
+            layout.addWidget(checkbox)
+
         layout.addSpacing(10)
         layout.addWidget(self.start_btn)
         layout.addSpacing(10)
@@ -134,6 +154,7 @@ class ScraperApp(QtWidgets.QMainWindow):
         # Sort button
         self.sort_btn = QtWidgets.QPushButton("Sort")
         self.sort_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.sort_btn.clicked.connect(self.sort_data)
 
         # Search dropdown (ComboBox)
         self.search_field = QtWidgets.QComboBox()
@@ -143,6 +164,18 @@ class ScraperApp(QtWidgets.QMainWindow):
         # Search button
         self.search_btn = QtWidgets.QPushButton("Search")
         self.search_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.search_btn.clicked.connect(self.search_data)
+
+        # File name input
+        self.file_label = QtWidgets.QLabel("File Name:")
+        self.file_label.setStyleSheet("font-size: 16px; color: #8B4513;")
+        self.file_input = QtWidgets.QLineEdit()
+        self.file_input.setStyleSheet("padding: 5px; font-size: 14px;")
+
+        # Open file button
+        self.open_file_btn = QtWidgets.QPushButton("Open File")
+        self.open_file_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.open_file_btn.clicked.connect(self.open_file)
 
         # Table for displaying entities
         self.entity_table = QtWidgets.QTableWidget()
@@ -155,9 +188,15 @@ class ScraperApp(QtWidgets.QMainWindow):
         # Back button to go back to scraping page
         self.back_btn = QtWidgets.QPushButton("Back to Scraping Page")
         self.back_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
+        self.back_btn.clicked.connect(lambda: self.central_widget.setCurrentWidget(self.scraping_page))
 
         # Add widgets to layout with proper spacing
         layout.addStretch()
+        layout.addWidget(self.file_label)
+        layout.addWidget(self.file_input)
+        layout.addSpacing(10)
+        layout.addWidget(self.open_file_btn)
+        layout.addSpacing(20)
         layout.addWidget(self.sort_algo_combo)
         layout.addSpacing(10)
         layout.addWidget(self.sort_btn)
@@ -182,22 +221,27 @@ class ScraperApp(QtWidgets.QMainWindow):
             self.scrape_thread.start()
 
     def scrape_entities(self):
+        selected_attributes = [checkbox.text() for checkbox in self.attribute_checkboxes if checkbox.isChecked()]
+
         for i in range(25000):
             if self.is_paused:
                 while self.is_paused:
                     time.sleep(0.1)
             time.sleep(0.01)  # Simulate scraping delay
-            entity = [
-                i,
-                f"Entity-{i}",
-                random.choice(["Category A", "Category B", "Category C"]),
-                random.uniform(10, 100),
-                random.randint(1, 500),
-                random.uniform(1, 5),
-                f"2024-10-0{random.randint(1,9)}"
-            ]
-            self.entities.append(entity)
-            self.update_table(i)
+            entity = {
+                "ID": i,
+                "Name": f"Entity-{i}",
+                "Category": random.choice(["Category A", "Category B", "Category C"]),
+                "Price": random.uniform(10, 100),
+                "Stock": random.randint(1, 500),
+                "Rating": random.uniform(1, 5),
+                "Date": f"2024-10-0{random.randint(1,9)}"
+            }
+
+            # Filter entity by selected attributes
+            filtered_entity = [entity[attr] for attr in selected_attributes]
+            self.entities.append(filtered_entity)
+            self.update_table(i, filtered_entity)
             self.progress.setValue(int((i + 1) / 25000 * 100))
         self.scrape_thread = None
 
@@ -207,10 +251,9 @@ class ScraperApp(QtWidgets.QMainWindow):
     def resume_scraping(self):
         self.is_paused = False
 
-    def update_table(self, row_count):
+    def update_table(self, row_count, entity):
         self.entity_table.setRowCount(row_count + 1)
-        entity = self.entities[row_count]
-        for col in range(7):
+        for col in range(len(entity)):
             self.entity_table.setItem(row_count, col, QtWidgets.QTableWidgetItem(str(entity[col])))
 
     # Sorting and search functions
@@ -276,12 +319,23 @@ class ScraperApp(QtWidgets.QMainWindow):
             for j, value in enumerate(entity):
                 self.entity_table.setItem(i, j, QtWidgets.QTableWidgetItem(str(value)))
 
+    def open_file(self):
+        filename = self.file_input.text()
+        if filename:
+            try:
+                with open(filename, 'r') as file:
+                    self.entities = [line.strip().split(',') for line in file]
+                    self.update_full_table()
+            except FileNotFoundError:
+                QtWidgets.QMessageBox.warning(self, "File Not Found", f"The file {filename} was not found.")
+
     def update_full_table(self):
         self.entity_table.setRowCount(0)  # Clear current table
         for i, entity in enumerate(self.entities):
             self.entity_table.insertRow(i)
             for j, value in enumerate(entity):
                 self.entity_table.setItem(i, j, QtWidgets.QTableWidgetItem(str(value)))
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
