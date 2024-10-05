@@ -65,9 +65,10 @@ class ScraperApp(QtWidgets.QMainWindow):
         self.sort_btn.setGeometry(180, 540, 100, 30)
         self.sort_btn.clicked.connect(self.sort_data)
 
-        # Search field
-        self.search_field = QtWidgets.QLineEdit(self)
+        # Search dropdown (ComboBox) to replace search field
+        self.search_field = QtWidgets.QComboBox(self)
         self.search_field.setGeometry(300, 540, 150, 30)
+        self.search_field.addItems(["ID", "Name", "Category", "Price", "Stock", "Rating", "Date"])
 
         # Search button
         self.search_btn = QtWidgets.QPushButton("Search", self)
@@ -158,8 +159,18 @@ class ScraperApp(QtWidgets.QMainWindow):
         return result
 
     def search_data(self):
-        search_term = self.search_field.text()
-        filtered_entities = [e for e in self.entities if search_term in str(e)]
+        selected_category = self.search_field.currentText()
+        column_map = {
+            "ID": 0,
+            "Name": 1,
+            "Category": 2,
+            "Price": 3,
+            "Stock": 4,
+            "Rating": 5,
+            "Date": 6
+        }
+        search_column = column_map[selected_category]
+        filtered_entities = sorted(self.entities, key=itemgetter(search_column))
         self.entities = filtered_entities
         self.update_full_table()
 
