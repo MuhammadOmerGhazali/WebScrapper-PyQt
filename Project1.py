@@ -191,47 +191,7 @@ class ScraperApp(QtWidgets.QMainWindow):
         for col in range(7):
             self.entity_table.setItem(row_count, col, QtWidgets.QTableWidgetItem(str(entity[col])))
 
-    # Sorting and search functions
-    def sort_data(self):
-        column_index = 0  # Sort based on the first column (ID) for simplicity
-        sort_algorithm = self.sort_algo_combo.currentText()
-        start_time = time.time()
-
-        if sort_algorithm == "Bubble Sort":
-            self.bubble_sort(column_index)
-        elif sort_algorithm == "Quick Sort":
-            self.entities.sort(key=itemgetter(column_index))
-        elif sort_algorithm == "Merge Sort":
-            self.entities = self.merge_sort(self.entities, column_index)
-        
-        self.update_full_table()
-        time_taken = (time.time() - start_time) * 1000  # Convert to milliseconds
-        print(f"Time taken for {sort_algorithm}: {time_taken:.2f} ms")
-
-    def bubble_sort(self, index):
-        n = len(self.entities)
-        for i in range(n):
-            for j in range(0, n-i-1):
-                if self.entities[j][index] > self.entities[j+1][index]:
-                    self.entities[j], self.entities[j+1] = self.entities[j+1], self.entities[j]
-
-    def merge_sort(self, data, index):
-        if len(data) <= 1:
-            return data
-        mid = len(data) // 2
-        left = self.merge_sort(data[:mid], index)
-        right = self.merge_sort(data[mid:], index)
-        return self.merge(left, right, index)
-
-    def merge(self, left, right, index):
-        result = []
-        while left and right:
-            if left[0][index] <= right[0][index]:
-                result.append(left.pop(0))
-            else:
-                result.append(right.pop(0))
-        result.extend(left if left else right)
-        return result
+ 
 
     def search_data(self):
         selected_category = self.search_field.currentText()
