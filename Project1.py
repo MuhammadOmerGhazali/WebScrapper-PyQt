@@ -66,7 +66,7 @@ class ScraperApp(QtWidgets.QMainWindow):
         password = self.password_input.text()
 
         # Simple login validation (for demonstration purposes)
-        if username == "admin" and password == "password":
+        if username == "admin" and password == "1234":
             self.central_widget.setCurrentWidget(self.scraping_page)  # Switch to scraping page
         else:
             QtWidgets.QMessageBox.warning(self, "Login Failed", "Incorrect username or password!")
@@ -245,4 +245,24 @@ class ScraperApp(QtWidgets.QMainWindow):
             "Date": 6
         }
         search_column = column_map[selected_category]
-       
+        filtered_entities = sorted(self.entities, key=itemgetter(search_column))
+        self.entities = filtered_entities
+        self.update_full_table()
+
+    def update_full_table(self):
+        self.entity_table.setRowCount(0)
+        for i, entity in enumerate(self.entities):
+            self.entity_table.setRowCount(i + 1)
+            for col in range(7):
+                self.entity_table.setItem(i, col, QtWidgets.QTableWidgetItem(str(entity[col])))
+
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    window = ScraperApp()
+    window.show()
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
