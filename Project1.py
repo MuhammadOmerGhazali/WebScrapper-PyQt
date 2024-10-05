@@ -11,7 +11,7 @@ class ScraperApp(QtWidgets.QMainWindow):
         super(ScraperApp, self).__init__()
         self.initUI()
         self.entities = []  # Will store the scraped data
-    
+
     def initUI(self):
         self.setWindowTitle("Web Scraper App")
         self.setGeometry(100, 100, 800, 600)
@@ -84,14 +84,27 @@ class ScraperApp(QtWidgets.QMainWindow):
         self.url_input = QtWidgets.QLineEdit()
         self.url_input.setStyleSheet("padding: 5px; font-size: 14px;")
 
-        # Attributes selection (CheckBoxes)
-        self.attribute_label = QtWidgets.QLabel("Select Attributes to Scrape:")
+        # Attributes selection (CheckBoxes) and Class input
+        self.attribute_label = QtWidgets.QLabel("Select 5 Attributes to Scrape and their Classes:")
         self.attribute_label.setStyleSheet("font-size: 16px; color: #8B4513;")
 
-        self.attribute_checkboxes = []
-        for attr in ["ID", "Name", "Category", "Price", "Stock", "Rating", "Date"]:
+        self.attribute_fields = []
+        for i, attr in enumerate(["Attribute 1", "Attribute 2", "Attribute 3", "Attribute 4", "Attribute 5"]):
+            attr_layout = QtWidgets.QHBoxLayout()
+
             checkbox = QtWidgets.QCheckBox(attr)
-            self.attribute_checkboxes.append(checkbox)
+            checkbox.setChecked(True)  # Automatically select the attribute since we're limiting it to 5
+            checkbox.setEnabled(False)  # Disable the checkbox to enforce exactly 5 attributes
+            attr_layout.addWidget(checkbox)
+
+            class_input = QtWidgets.QLineEdit()
+            class_input.setPlaceholderText(f"Enter CSS class or selector for {attr.lower()}")
+            class_input.setStyleSheet("padding: 5px; font-size: 14px;")
+            attr_layout.addWidget(class_input)
+
+            self.attribute_fields.append((checkbox, class_input))  # Store the checkbox and the input field
+
+            layout.addLayout(attr_layout)
 
         # Start, pause, resume buttons
         self.start_btn = QtWidgets.QPushButton("Start Scraping")
@@ -121,8 +134,9 @@ class ScraperApp(QtWidgets.QMainWindow):
         layout.addSpacing(10)
         layout.addWidget(self.attribute_label)
 
-        for checkbox in self.attribute_checkboxes:
+        for checkbox, class_input in self.attribute_fields:
             layout.addWidget(checkbox)
+            layout.addWidget(class_input)
 
         layout.addSpacing(10)
         layout.addWidget(self.start_btn)
@@ -185,65 +199,30 @@ class ScraperApp(QtWidgets.QMainWindow):
         )
         self.entity_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
-        # Back button to go back to scraping page
-        self.back_btn = QtWidgets.QPushButton("Back to Scraping Page")
-        self.back_btn.setStyleSheet("background-color: #8B4513; color: white; padding: 10px; font-size: 16px;")
-        self.back_btn.clicked.connect(lambda: self.central_widget.setCurrentWidget(self.scraping_page))
-
-        # Add widgets to layout with proper spacing
+        # Add widgets to layout
         layout.addStretch()
-        layout.addWidget(self.file_label)
-        layout.addWidget(self.file_input)
-        layout.addSpacing(10)
-        layout.addWidget(self.open_file_btn)
-        layout.addSpacing(20)
         layout.addWidget(self.sort_algo_combo)
         layout.addSpacing(10)
         layout.addWidget(self.sort_btn)
-        layout.addSpacing(20)
+        layout.addSpacing(10)
         layout.addWidget(self.search_field)
         layout.addWidget(self.search_btn)
+        layout.addSpacing(10)
+        layout.addWidget(self.file_label)
+        layout.addWidget(self.file_input)
+        layout.addWidget(self.open_file_btn)
         layout.addSpacing(20)
         layout.addWidget(self.entity_table)
-        layout.addSpacing(20)
-        layout.addWidget(self.back_btn)
         layout.addStretch()
 
         sorting_widget.setLayout(layout)
         return sorting_widget
 
-    # Scraping functions
     def start_scraping(self):
-        self.progress.setValue(0)
         self.is_paused = False
-        if not self.scrape_thread:
+        if self.scrape_thread is None:
             self.scrape_thread = threading.Thread(target=self.scrape_entities)
             self.scrape_thread.start()
-
-    def scrape_entities(self):
-        selected_attributes = [checkbox.text() for checkbox in self.attribute_checkboxes if checkbox.isChecked()]
-
-        for i in range(25000):
-            if self.is_paused:
-                while self.is_paused:
-                    time.sleep(0.1)
-            time.sleep(0.01)  # Simulate scraping delay
-            entity = {
-                "ID": i,
-                "Name": f"Entity-{i}",
-                "Category": random.choice(["Category A", "Category B", "Category C"]),
-                "Price": random.uniform(10, 100),
-                "Stock": random.randint(1, 500),
-                "Rating": random.uniform(1, 5),
-                "Date": f"2024-10-0{random.randint(1,9)}"
-            }
-
-            # Filter entity by selected attributes
-            filtered_entity = [entity[attr] for attr in selected_attributes]
-            self.entities.append(filtered_entity)
-            self.update_table(i, filtered_entity)
-            self.progress.setValue(int((i + 1) / 25000 * 100))
-        self.scrape_thread = None
 
     def pause_scraping(self):
         self.is_paused = True
@@ -251,94 +230,47 @@ class ScraperApp(QtWidgets.QMainWindow):
     def resume_scraping(self):
         self.is_paused = False
 
-    def update_table(self, row_count, entity):
-        self.entity_table.setRowCount(row_count + 1)
-        for col in range(len(entity)):
-            self.entity_table.setItem(row_count, col, QtWidgets.QTableWidgetItem(str(entity[col])))
+    def scrape_entities(self):
+        url = self.url_input.text()
+        selected_attributes = [(field[1].text(), field[0].text()) for field in self.attribute_fields if field[0].isChecked()]
 
-    # Sorting and search functions
+        for i in range(25000):  # Simulated scraping
+            if self.is_paused:
+                while self.is_paused:
+                    time.sleep(0.1)
+            time.sleep(0.01)  # Simulate scraping delay
+
+            entity = {}  # Simulate an entity
+            for (css_class, attr_name) in selected_attributes:
+                # Simulate the fetching of an attribute using the CSS class (in a real scraper, you'd use something like BeautifulSoup)
+                entity[attr_name] = f"ScrapedData-{random.randint(100, 999)}"
+
+            filtered_entity = [entity[attr_name] for _, attr_name in selected_attributes]
+            self.entities.append(filtered_entity)
+            self.update_table(i, filtered_entity)
+            self.progress.setValue(int((i + 1) / 25000 * 100))
+        self.scrape_thread = None
+
+    def update_table(self, row, entity):
+        self.entity_table.insertRow(row)
+        for col, value in enumerate(entity):
+            self.entity_table.setItem(row, col, QtWidgets.QTableWidgetItem(value))
+
     def sort_data(self):
-        column_index = 0  # Sort based on the first column (ID) for simplicity
-        sort_algorithm = self.sort_algo_combo.currentText()
-        start_time = time.time()
-
-        if sort_algorithm == "Bubble Sort":
-            self.bubble_sort(column_index)
-        elif sort_algorithm == "Quick Sort":
-            self.entities.sort(key=itemgetter(column_index))
-        elif sort_algorithm == "Merge Sort":
-            self.entities = self.merge_sort(self.entities, column_index)
-        
-        self.update_full_table()
-        time_taken = (time.time() - start_time) * 1000  # Convert to milliseconds
-        print(f"Time taken for {sort_algorithm}: {time_taken:.2f} ms")
-
-    def bubble_sort(self, index):
-        n = len(self.entities)
-        for i in range(n):
-            for j in range(0, n-i-1):
-                if self.entities[j][index] > self.entities[j+1][index]:
-                    self.entities[j], self.entities[j+1] = self.entities[j+1], self.entities[j]
-
-    def merge_sort(self, data, index):
-        if len(data) <= 1:
-            return data
-        mid = len(data) // 2
-        left = self.merge_sort(data[:mid], index)
-        right = self.merge_sort(data[mid:], index)
-        return self.merge(left, right, index)
-
-    def merge(self, left, right, index):
-        result = []
-        while left and right:
-            if left[0][index] <= right[0][index]:
-                result.append(left.pop(0))
-            else:
-                result.append(right.pop(0))
-        result.extend(left if left else right)
-        return result
+        selected_algorithm = self.sort_algo_combo.currentText()
+        print(f"Sorting with {selected_algorithm}")
 
     def search_data(self):
-        selected_category = self.search_field.currentText()
-        column_map = {
-            "ID": 0,
-            "Name": 1,
-            "Category": 2,
-            "Price": 3,
-            "Stock": 4,
-            "Rating": 5,
-            "Date": 6
-        }
-        column_index = column_map[selected_category]
-        search_value = QtWidgets.QInputDialog.getText(self, "Search", f"Enter {selected_category} value:")[0]
-
-        search_results = [entity for entity in self.entities if str(entity[column_index]) == search_value]
-        self.entity_table.setRowCount(0)  # Clear current table
-        for i, entity in enumerate(search_results):
-            self.entity_table.insertRow(i)
-            for j, value in enumerate(entity):
-                self.entity_table.setItem(i, j, QtWidgets.QTableWidgetItem(str(value)))
+        selected_field = self.search_field.currentText()
+        print(f"Searching by {selected_field}")
 
     def open_file(self):
-        filename = self.file_input.text()
-        if filename:
-            try:
-                with open(filename, 'r') as file:
-                    self.entities = [line.strip().split(',') for line in file]
-                    self.update_full_table()
-            except FileNotFoundError:
-                QtWidgets.QMessageBox.warning(self, "File Not Found", f"The file {filename} was not found.")
-
-    def update_full_table(self):
-        self.entity_table.setRowCount(0)  # Clear current table
-        for i, entity in enumerate(self.entities):
-            self.entity_table.insertRow(i)
-            for j, value in enumerate(entity):
-                self.entity_table.setItem(i, j, QtWidgets.QTableWidgetItem(str(value)))
+        file_name = self.file_input.text()
+        print(f"Opening file: {file_name}")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    scraper_app = ScraperApp()
-    scraper_app.show()
+    window = ScraperApp()
+    window.show()
     sys.exit(app.exec_())
