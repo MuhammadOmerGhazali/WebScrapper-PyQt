@@ -250,6 +250,8 @@ class ScraperApp(QtWidgets.QWidget):
             self.progress_bar.setValue(int(progress))
         else:
             self.progress_bar.setValue(0)
+    
+    
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
