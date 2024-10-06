@@ -47,6 +47,10 @@ class ScraperApp(QtWidgets.QWidget):
         self.progress_bar = QtWidgets.QProgressBar(self)
         self.layout.addWidget(self.progress_bar)
 
+
+        self.is_scraping = False  # Indicates if scraping is active
+        self.first_time_load = True  # Indicates if the table has been loaded for the first time
+
         # Start and Pause Buttons
         self.start_button = QtWidgets.QPushButton("Start Scraping", self)
         self.start_button.clicked.connect(self.start_scraping)
@@ -107,6 +111,7 @@ class ScraperApp(QtWidgets.QWidget):
 
     def start_scraping(self):
         if self.scrape_thread is None or not self.scrape_thread.is_alive():
+            self.is_scraping = True  # Set scraping to active
             self.scrape_thread = threading.Thread(target=self.run_scraping)
             self.scrape_thread.start()
             self.start_button.setEnabled(False)
@@ -117,21 +122,27 @@ class ScraperApp(QtWidgets.QWidget):
 
     def pause_scraping(self):
         pause_scraping()
+        self.is_scraping = False  # Set scraping to inactive
         self.start_button.setEnabled(True)
         self.pause_button.setEnabled(False)
 
     def update_table(self):
-        # Load the CSV file and display it in the table
+        # Load the CSV file and display it in the table if conditions are met
         if os.path.exists("ebay.csv"):
             df = pd.read_csv("ebay.csv")
-            self.current_df = df  # Store current DataFrame
-            model = PandasModel(df)
-            self.table_view.setModel(model)
-            self.table_view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-
-            # Populate the column selection dropdown with DataFrame headers
-            self.column_combobox.clear()
-            self.column_combobox.addItems(df.columns.tolist())
+            if self.first_time_load:  # Load table for the first time
+                self.current_df = df
+                model = PandasModel(df)
+                self.table_view.setModel(model)
+                self.table_view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+                self.column_combobox.clear()
+                self.column_combobox.addItems(df.columns.tolist())
+                self.first_time_load = False  # Set first time load to False after loading
+            elif self.is_scraping:  # Update table only if scraping is active
+                self.current_df = df
+                model = PandasModel(df)
+                self.table_view.setModel(model)
+                self.table_view.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
     def sort_data(self):
         if self.current_df is not None:
