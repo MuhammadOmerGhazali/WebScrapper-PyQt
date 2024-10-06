@@ -62,9 +62,9 @@ def scrape():
             # Extract product data
             for section in soup.findAll("div", attrs={"class": "vehicle-card"}):
                 productnames = section.find("h2", attrs={"class": "title"}).get_text().strip()
-                price = section.find("span", attrs={"class": "primary-price"}).get_text().strip() if section.find("span", attrs={"class": "primary-price"}) else "N/A"
-                miles = section.find("div", attrs={"class": "mileage"}).get_text().strip() if section.find("div", attrs={"class": "mileage"}) else "N/A"
-                dealername = section.find("div", class_="dealer-name").find("strong").get_text().strip() if section.find("div", class_="dealer-name") else "N/A"
+                price = section.find("span", attrs={"class": "primary-price"}).get_text().strip() if section.find("span", attrs={"class": "primary-price"}) else "Not found"
+                miles = section.find("div", attrs={"class": "mileage"}).get_text().strip() if section.find("div", attrs={"class": "mileage"}) else "Not found"
+                dealername = section.find("div", class_="dealer-name").find("strong").get_text().strip() if section.find("div", class_="dealer-name") else "Not found"
                 rating = section.find("spark-rating")["rating"] if section.find("spark-rating") else "Rating not found"
                 reviews = section.find('span', class_='test1 sds-rating__link sds-button-link').get_text().strip() if section.find("span", class_="test1 sds-rating__link sds-button-link") else "Reviews not found"
                 location = section.find("div", class_="miles-from").get_text().strip() if section.find("div", class_="miles-from") else "Location not found"

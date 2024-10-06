@@ -5,6 +5,7 @@ import threading
 from PyQt5 import QtWidgets, QtCore
 from scrapper import start_scraping, pause_scraping, current_page, total_pages, scraper_signals  # Import signal
 from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort
+import time
 class PandasModel(QtCore.QAbstractTableModel):
     def __init__(self, data=None):
         super().__init__()
@@ -37,7 +38,7 @@ class ScraperApp(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("eBay Scraper")
+        self.setWindowTitle("Website Scraper")
         self.setGeometry(100, 100, 600, 400)
 
         # Layout
@@ -149,12 +150,22 @@ class ScraperApp(QtWidgets.QWidget):
             # Get selected column name and sorting algorithm
             column_name = self.column_combobox.currentText()
             algorithm = self.algorithm_combobox.currentText().lower()  # Convert to lowercase for matching
-            
+        
+            # Start timing the sorting process
+            start_time = time.time()
+        
             # Sort the DataFrame
             sorted_df = self.sort_dataframe(self.current_df, column_name, algorithm)
+        
+            # Stop timing and calculate elapsed time
+            elapsed_time = time.time() - start_time
+        
             # Update the model with sorted data
             self.table_view.setModel(PandasModel(sorted_df))
             self.current_df = sorted_df  # Update the current DataFrame to the sorted one
+        
+            # Show the time taken in a message box
+            QtWidgets.QMessageBox.information(self, "Sorting Complete", f"Time taken to sort: {elapsed_time:.4f} seconds")
 
     def sort_dataframe(self, df, column_name, algorithm):
         if algorithm == "heap sort":
