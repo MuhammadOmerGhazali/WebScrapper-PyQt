@@ -19,41 +19,12 @@ def string_to_integer(s):
     return int(clean_string) if clean_string else 0
 
 def string_to_float(s):
-    s = s.strip()
-    if not s:
-        raise ValueError("Input string is empty")
+    clean_string = re.sub(r'[^0-9.]', '', s)
 
-    result = 0.0
-    decimal_found = False
-    decimal_divider = 1
-    sign = 1
-    start_idx = 0
-
-    if s[0] == '-':
-        sign = -1
-        start_idx = 1
-    elif s[0] == '+':
-        start_idx = 1
-
-    for i in range(start_idx, len(s)):
-        char = s[i]
-
-        if char == '.':
-            if decimal_found:
-                raise ValueError(f"Invalid input: multiple decimal points in '{s}'")
-            decimal_found = True
-        elif char.isdigit():
-            digit_value = ord(char) - ord('0')
-
-            if decimal_found:
-                decimal_divider *= 10
-                result += digit_value / decimal_divider
-            else:
-                result = result * 10 + digit_value
-        else:
-            raise ValueError(f"Invalid character found in input: '{char}'")
-
-    return sign * result
+    try:
+        return float(clean_string) if clean_string else 0.0
+    except ValueError:
+        return 0.0
 
 # Arrays to store data
 Productnames = []
