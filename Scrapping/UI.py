@@ -77,6 +77,21 @@ class ScraperApp(QtWidgets.QWidget):
         self.sort_button.clicked.connect(self.sort_data)
         self.layout.addWidget(self.sort_button)
 
+
+        # Search Input and Button
+        self.search_input = QtWidgets.QLineEdit(self)
+        self.layout.addWidget(QtWidgets.QLabel("Search:"))
+        self.layout.addWidget(self.search_input)
+
+        self.search_button = QtWidgets.QPushButton("Search", self)
+        self.search_button.clicked.connect(self.perform_search)
+        self.layout.addWidget(self.search_button)
+
+        # Reset Button
+        self.reset_button = QtWidgets.QPushButton("Reset Data", self)
+        self.reset_button.clicked.connect(self.reset_data)
+        self.layout.addWidget(self.reset_button)
+
         # Table View for displaying scraped data
         self.table_view = QtWidgets.QTableView(self)
         self.table_view.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -192,6 +207,30 @@ class ScraperApp(QtWidgets.QWidget):
         else:
             self.progress_bar.setValue(0)
     
+    def perform_search(self):
+        if self.current_df is not None:
+            search_text = self.search_input.text()
+            selected_column = self.column_combobox.currentText()  # Get selected column
+
+            if search_text:  # Check if the search input is not empty
+                search_results = self.search(self.current_df, selected_column, search_text)
+                if not search_results.empty:
+                    self.table_view.setModel(PandasModel(search_results))  # Update table with search results
+                else:
+                    QtWidgets.QMessageBox.information(self, "No Results", "No matches found.")
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", "Please enter a search term.")
+
+
+    def search(self, df, column_name, text):
+        return df[df[column_name].astype(str).str.contains(text, case=False, na=False)]
+
+    def reset_data(self):
+        if os.path.exists("ebay.csv"):
+            self.current_df = pd.read_csv("ebay.csv")  # Reload original DataFrame
+            self.table_view.setModel(PandasModel(self.current_df))  # Update table with original data
+            self.search_input.clear()  # Clear the search input field
+
     
 
 if __name__ == "__main__":
