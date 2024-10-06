@@ -1,4 +1,5 @@
 import os
+import re
 import undetected_chromedriver as uc
 import pandas as pd
 import time
@@ -12,6 +13,47 @@ class ScraperSignals(QObject):
 # Initialize the web scraping driver
 options = uc.ChromeOptions()
 driver = uc.Chrome(options=options)
+
+def string_to_integer(s):
+    clean_string = re.sub(r'[^0-9]', '', s)
+    return int(clean_string) if clean_string else 0
+
+def string_to_float(s):
+    s = s.strip()
+    if not s:
+        raise ValueError("Input string is empty")
+
+    result = 0.0
+    decimal_found = False
+    decimal_divider = 1
+    sign = 1
+    start_idx = 0
+
+    if s[0] == '-':
+        sign = -1
+        start_idx = 1
+    elif s[0] == '+':
+        start_idx = 1
+
+    for i in range(start_idx, len(s)):
+        char = s[i]
+
+        if char == '.':
+            if decimal_found:
+                raise ValueError(f"Invalid input: multiple decimal points in '{s}'")
+            decimal_found = True
+        elif char.isdigit():
+            digit_value = ord(char) - ord('0')
+
+            if decimal_found:
+                decimal_divider *= 10
+                result += digit_value / decimal_divider
+            else:
+                result = result * 10 + digit_value
+        else:
+            raise ValueError(f"Invalid character found in input: '{char}'")
+
+    return sign * result
 
 # Arrays to store data
 Productnames = []
@@ -55,6 +97,10 @@ def scrape():
                 rating = section.find("spark-rating")["rating"] if section.find("spark-rating") else "Rating not found"
                 reviews = section.find("span", class_="sds-rating__link sds-button-link").get_text().strip() if section.find("span", class_="sds-rating__link sds-button-link") else "Reviews not found"
                 location = section.find("div", class_="miles-from").get_text().strip() if section.find("div", class_="miles-from") else "Location not found"
+
+                price = string_to_integer(price)
+                miles = string_to_integer(miles)
+                rating = string_to_float(rating)
 
                 if productnames and price:
                     Productnames.append(productnames)
