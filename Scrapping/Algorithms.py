@@ -73,6 +73,86 @@ def bubble_sort(df, column_name):
 
     return create_sorted_dataframe(df, arr)
 
+def selection_sort(df, column_name):
+    """ Selection sort implementation. """
+    # Create a list of tuples (value, index) to keep track of the original index
+    arr = list(zip(df[column_name].tolist(), df.index.tolist()))
+    n = len(arr)
+
+    for i in range(n):
+        # Find the minimum element in the remaining unsorted array
+        min_index = i
+        for j in range(i + 1, n):
+            if arr[j][0] < arr[min_index][0]:
+                min_index = j
+
+        # Swap the found minimum element with the first element
+        arr[i], arr[min_index] = arr[min_index], arr[i]
+
+    return create_sorted_dataframe(df, arr)
+
+
+def merge_sort(df, column_name):
+    """ Merge sort implementation. """
+    # Create a list of tuples (value, index) to keep track of the original index
+    arr = list(zip(df[column_name].tolist(), df.index.tolist()))
+    merge_sort_helper(arr)
+    
+    return create_sorted_dataframe(df, arr)
+
+def merge_sort_helper(arr):
+    if len(arr) > 1:
+        mid = len(arr) // 2  # Find the middle point
+        left_half = arr[:mid]  # Dividing the elements into 2 halves
+        right_half = arr[mid:]
+
+        # Recursively sort the halves
+        merge_sort_helper(left_half)
+        merge_sort_helper(right_half)
+
+        # Merging the sorted halves
+        i = j = k = 0
+
+        while i < len(left_half) and j < len(right_half):
+            if left_half[i][0] <= right_half[j][0]:
+                arr[k] = left_half[i]
+                i += 1
+            else:
+                arr[k] = right_half[j]
+                j += 1
+            k += 1
+
+        # Copy the remaining elements of left_half, if any
+        while i < len(left_half):
+            arr[k] = left_half[i]
+            i += 1
+            k += 1
+
+        # Copy the remaining elements of right_half, if any
+        while j < len(right_half):
+            arr[k] = right_half[j]
+            j += 1
+            k += 1
+
+
+def insertion_sort(df, column_name):
+    """ Insertion sort implementation. """
+    # Create a list of tuples (value, index) to keep track of the original index
+    arr = list(zip(df[column_name].tolist(), df.index.tolist()))
+    n = len(arr)
+
+    for i in range(1, n):
+        key = arr[i]  # The current element to be inserted
+        j = i - 1
+
+        # Move elements of arr[0..i-1], that are greater than key, to one position ahead of their current position
+        while j >= 0 and arr[j][0] > key[0]:
+            arr[j + 1] = arr[j]  # Shift element to the right
+            j -= 1
+        
+        arr[j + 1] = key  # Insert the key in the correct position
+
+    return create_sorted_dataframe(df, arr)
 def create_sorted_dataframe(df, arr):
     """ Create a sorted DataFrame from the sorted array of tuples (value, index). """
     sorted_indices = [index for _, index in arr]
