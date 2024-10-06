@@ -33,21 +33,13 @@ def heap_sort(df, column_name):
         arr[i], arr[0] = arr[0], arr[i]  # Swap
         heapify(arr, i, 0)
 
-    # Use the indices to create a sorted DataFrame
-    sorted_indices = [index for _, index in arr]
-    sorted_df = df.loc[sorted_indices].reset_index(drop=True)
-    return sorted_df
-
+    return create_sorted_dataframe(df, arr)
 
 def quick_sort(df, column_name):
     """ Quick sort implementation. """
     arr = list(zip(df[column_name].tolist(), df.index.tolist()))
     quick_sort_helper(arr, 0, len(arr) - 1)
-
-    # Use the indices to create a sorted DataFrame
-    sorted_indices = [index for _, index in arr]
-    sorted_df = df.loc[sorted_indices].reset_index(drop=True)
-    return sorted_df
+    return create_sorted_dataframe(df, arr)
 
 def quick_sort_helper(arr, low, high):
     if low < high:
@@ -69,7 +61,6 @@ def partition(arr, low, high):
     arr[i + 1], arr[high] = arr[high], arr[i + 1]  # swap pivot with the element at i+1
     return i + 1
 
-
 def bubble_sort(df, column_name):
     """ Bubble sort implementation. """
     arr = list(zip(df[column_name].tolist(), df.index.tolist()))
@@ -80,10 +71,10 @@ def bubble_sort(df, column_name):
             if arr[j][0] > arr[j+1][0]:
                 arr[j], arr[j+1] = arr[j+1], arr[j]  # Swap
 
-    # Use the indices to create a sorted DataFrame
+    return create_sorted_dataframe(df, arr)
+
+def create_sorted_dataframe(df, arr):
+    """ Create a sorted DataFrame from the sorted array of tuples (value, index). """
     sorted_indices = [index for _, index in arr]
     sorted_df = df.loc[sorted_indices].reset_index(drop=True)
     return sorted_df
-
-
-
