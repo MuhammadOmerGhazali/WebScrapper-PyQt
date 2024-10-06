@@ -67,7 +67,7 @@ Reviews = []
 # Control variables
 is_paused = False
 current_page = 1
-total_pages = 100
+total_pages = 600
 scrape_thread = None
 scraper_signals = ScraperSignals()  # Create a signal instance
 
@@ -95,12 +95,13 @@ def scrape():
                 miles = section.find("div", attrs={"class": "mileage"}).get_text().strip() if section.find("div", attrs={"class": "mileage"}) else "N/A"
                 dealername = section.find("div", class_="dealer-name").find("strong").get_text().strip() if section.find("div", class_="dealer-name") else "N/A"
                 rating = section.find("spark-rating")["rating"] if section.find("spark-rating") else "Rating not found"
-                reviews = section.find("span", class_="sds-rating__link sds-button-link").get_text().strip() if section.find("span", class_="sds-rating__link sds-button-link") else "Reviews not found"
+                reviews = section.find('span', class_='test1 sds-rating__link sds-button-link').get_text().strip() if section.find("span", class_="test1 sds-rating__link sds-button-link") else "Reviews not found"
                 location = section.find("div", class_="miles-from").get_text().strip() if section.find("div", class_="miles-from") else "Location not found"
 
                 price = string_to_integer(price)
                 miles = string_to_integer(miles)
                 rating = string_to_float(rating)
+                reviews = string_to_integer(reviews)
 
                 if productnames and price:
                     Productnames.append(productnames)
