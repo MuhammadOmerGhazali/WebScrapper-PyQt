@@ -14,13 +14,13 @@ options = uc.ChromeOptions()
 driver = uc.Chrome(options=options)
 
 # Arrays to store data
-Name = []
+Productnames = []
 Price = []
-Seller = []
-Shipping = []
-Watchers = []
+Miles = []
+Dealername = []
+Rating = []
 Location = []
-Sale = []
+Reviews = []
 
 # Control variables
 is_paused = False
@@ -37,7 +37,7 @@ def scrape():
             time.sleep(1)
             continue
 
-        url = f"https://www.ebay.com/sch/i.html?_from=R40&_nkw=snacks&_sacat=0&_ipg=240&_pgn={current_page}"
+        url = f"https://www.cars.com/shopping/results/?page={current_page}"
 
         try:
             driver.get(url)
@@ -47,35 +47,34 @@ def scrape():
             soup = bs(content, "html.parser")
 
             # Extract product data
-            for a in soup.findAll("div", attrs={"class": "s-item__info clearfix"}):
-                name = a.find("span", attrs={"role": "heading"})
-                price = a.find("span", attrs={"class": "s-item__price"})
-                seller = a.find("span", attrs={"class": "s-item__seller-info-text"})
-                shipping = a.find("span", attrs={"class": "s-item__shipping s-item__logisticsCost"})
-                location = a.find("span", attrs={"class": "s-item__location s-item__itemLocation"})
-                sale = a.find("span", attrs={"class": "s-item__discount s-item__discount"})
+            for section in soup.findAll("div", attrs={"class": "vehicle-card"}):
+                productnames = section.find("h2", attrs={"class": "title"}).get_text().strip()
+                price = section.find("span", attrs={"class": "primary-price"}).get_text().strip() if section.find("span", attrs={"class": "primary-price"}) else "N/A"
+                miles = section.find("div", attrs={"class": "mileage"}).get_text().strip() if section.find("div", attrs={"class": "mileage"}) else "N/A"
+                dealername = section.find("div", class_="dealer-name").find("strong").get_text().strip() if section.find("div", class_="dealer-name") else "N/A"
+                rating = section.find("spark-rating")["rating"] if section.find("spark-rating") else "Rating not found"
+                reviews = section.find("span", class_="sds-rating__link sds-button-link").get_text().strip() if section.find("span", class_="sds-rating__link sds-button-link") else "Reviews not found"
+                location = section.find("div", class_="miles-from").get_text().strip() if section.find("div", class_="miles-from") else "Location not found"
 
-                seller_name = seller.text.strip() if seller else "Not Available"
-
-                if name and price:
-                    Name.append(name.text.strip())
-                    Price.append(price.text.strip())
-                    Seller.append(seller_name)
-                    Shipping.append(shipping.text.strip() if shipping and shipping.text else "Not Available")
-                    Watchers.append(a.find("span", attrs={"class": "s-item__dynamic s-item__watchCountTotal"}).text.strip() if a.find("span", attrs={"class": "s-item__dynamic s-item__watchCountTotal"}) else "Not Available")
-                    Location.append(location.text.strip() if location else "Not Available")
-                    Sale.append(sale.text.strip() if sale else "Not Available")
+                if productnames and price:
+                    Productnames.append(productnames)
+                    Price.append(price)
+                    Miles.append(miles)
+                    Dealername.append(dealername)
+                    Rating.append(rating)
+                    Location.append(location)
+                    Reviews.append(reviews)
 
             # Save progress to CSV
             csv_file_path = os.path.join(os.getcwd(), "ebay.csv")
             df = pd.DataFrame({
-                "Product Name": Name,
+                "Product Name": Productnames,
                 "Price": Price,
-                "Seller": Seller,
-                "Shipping": Shipping,
-                "Rating": Watchers,
+                "Miles": Miles,
+                "Dealername": Dealername,
+                "Rating": Rating,
                 "Location": Location,
-                "Sale": Sale
+                "Reviews": Reviews
             })
             df.to_csv(csv_file_path, index=False, encoding="utf-8")
 
@@ -109,3 +108,6 @@ def pause_scraping():
     global is_paused
     is_paused = True
     print("Scraping paused.")
+
+
+    
