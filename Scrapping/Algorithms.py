@@ -1,3 +1,4 @@
+import re
 def heap_sort(df, column_name):
     """ Perform heap sort on the specified column of the DataFrame. """
     # Build heap
@@ -74,3 +75,8 @@ def bubble_sort(df, column_name):
         # Create a new DataFrame to reflect the sorted order
         sorted_df = df.iloc[[df[column_name].tolist().index(x) for x in arr]].reset_index(drop=True)
         return sorted_df
+
+
+def string_to_integer(s):
+    clean_string = re.sub(r'[^0-9]', '', s)
+    return int(clean_string) if clean_string else 0
