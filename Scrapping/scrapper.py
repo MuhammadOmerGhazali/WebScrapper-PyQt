@@ -10,7 +10,6 @@ from PyQt5.QtCore import pyqtSignal, QObject
 class ScraperSignals(QObject):
     progress_signal = pyqtSignal(int)
 
-# Initialize the web scraping driver
 options = uc.ChromeOptions()
 driver = uc.Chrome(options=options)
 
@@ -26,7 +25,6 @@ def string_to_float(s):
     except ValueError:
         return 0.0
 
-# Arrays to store data
 Productnames = []
 Price = []
 Miles = []
@@ -35,12 +33,11 @@ Rating = []
 Location = []
 Reviews = []
 
-# Control variables
 is_paused = False
 current_page = 1
 total_pages = 600
 scrape_thread = None
-scraper_signals = ScraperSignals()  # Create a signal instance
+scraper_signals = ScraperSignals()  
 
 def scrape():
     global current_page, is_paused
@@ -59,7 +56,6 @@ def scrape():
             content = driver.page_source
             soup = bs(content, "html.parser")
 
-            # Extract product data
             for section in soup.findAll("div", attrs={"class": "vehicle-card"}):
                 productnames = section.find("h2", attrs={"class": "title"}).get_text().strip()
                 price = section.find("span", attrs={"class": "primary-price"}).get_text().strip() if section.find("span", attrs={"class": "primary-price"}) else "Not found"
@@ -83,7 +79,6 @@ def scrape():
                     Location.append(location)
                     Reviews.append(reviews)
 
-            # Save progress to CSV
             csv_file_path = os.path.join(os.getcwd(), "ebay.csv")
             df = pd.DataFrame({
                 "Product Name": Productnames,
@@ -96,7 +91,6 @@ def scrape():
             })
             df.to_csv(csv_file_path, index=False, encoding="utf-8")
 
-            # Emit progress signal
             scraper_signals.progress_signal.emit(current_page)
 
             current_page += 1
@@ -109,7 +103,6 @@ def scrape():
     driver.quit()
 
 
-# Function to start/resume scraping
 def start_scraping():
     global scrape_thread, is_paused
 
@@ -121,7 +114,6 @@ def start_scraping():
         is_paused = False
         print("Resuming scraping...")
 
-# Function to pause scraping
 def pause_scraping():
     global is_paused
     is_paused = True
