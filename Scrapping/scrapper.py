@@ -118,6 +118,3 @@ def pause_scraping():
     global is_paused
     is_paused = True
     print("Scraping paused.")
-
-
-    

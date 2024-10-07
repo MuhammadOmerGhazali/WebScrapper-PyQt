@@ -287,6 +287,33 @@ def counting_sort_for_radix(arr, exp, column_type):
         sorted_df = counting_sort(modified_df, 0)
         return list(zip([chr(val) if val != 0 else "" for val in sorted_df[0].tolist()], sorted_df[1].tolist()))
 
+
+def shell_sort(df, column_name):
+    """ Shell sort implementation. """
+    arr = list(zip(df[column_name].tolist(), df.index.tolist()))
+    n = len(arr)
+    gap = n // 2
+
+    # Reduce the gap until it becomes 0
+    while gap > 0:
+        for i in range(gap, n):
+            temp = arr[i]
+            j = i
+            while j >= gap and arr[j - gap][0] > temp[0]:
+                arr[j] = arr[j - gap]
+                j -= gap
+            arr[j] = temp
+        gap //= 2
+
+    return create_sorted_dataframe(df, arr)
+
+def tim_sort(df, column_name):
+    """ Tim sort implementation using Python's sorted function. """
+    arr = list(zip(df[column_name].tolist(), df.index.tolist()))
+    sorted_arr = sorted(arr, key=lambda x: x[0])
+    
+    return create_sorted_dataframe(df, sorted_arr)
+
 def create_sorted_dataframe(df, arr):
     """ Create a sorted DataFrame from the sorted array of tuples (value, index). """
     sorted_indices = [index for _, index in arr]

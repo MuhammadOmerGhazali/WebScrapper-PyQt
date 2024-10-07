@@ -1,10 +1,11 @@
 import sys
 import os
 import pandas as pd
+import re
 import threading
-from PyQt5 import QtWidgets, QtCore, QtGui
-from scrapper import start_scraping, pause_scraping, current_page, total_pages, scraper_signals 
-from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort,counting_sort,radix_sort,bucket_sort
+from PyQt5 import QtWidgets, QtCore
+from scrapper import start_scraping, pause_scraping, current_page, total_pages, scraper_signals  # Import signal
+from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort,counting_sort,radix_sort,bucket_sort,shell_sort,tim_sort
 import time
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -89,7 +90,7 @@ class ScraperApp(QtWidgets.QWidget):
         self.layout.addWidget(self.column_combobox)
 
         self.algorithm_combobox = QtWidgets.QComboBox(self)
-        self.algorithm_combobox.addItems(["Heap Sort", "Quick Sort", "Bubble Sort", "Insertion Sort", "Selection Sort", "Merge Sort","Counting Sort","Bucket Sort","Radix Sort"])
+        self.algorithm_combobox.addItems(["Heap Sort", "Quick Sort", "Bubble Sort", "Insertion Sort", "Selection Sort", "Merge Sort","Counting Sort","Bucket Sort","Radix Sort", "Tim Sort", "Shell Sort"])
         self.layout.addWidget(QtWidgets.QLabel("Select Sorting Algorithm:"))
         self.layout.addWidget(self.algorithm_combobox)
 
@@ -98,8 +99,10 @@ class ScraperApp(QtWidgets.QWidget):
         self.layout.addWidget(self.sort_button)
 
         self.search_input = QtWidgets.QLineEdit(self)
+        self.search_input.setPlaceholderText('Format: "column name":"text here" && "another column":"another text"')
         self.layout.addWidget(QtWidgets.QLabel("Search:"))
         self.layout.addWidget(self.search_input)
+
 
         self.search_button = QtWidgets.QPushButton("Search", self)
         self.search_button.clicked.connect(self.perform_search)
@@ -205,7 +208,13 @@ class ScraperApp(QtWidgets.QWidget):
             return quick_sort(df,column_name)
         elif algorithm =="radix sort":
             return insertion_sort(df,column_name)
-        return df  
+        elif algorithm == "shell sort":
+            return shell_sort(df, column_name)
+        elif algorithm =="tim sort":
+            return tim_sort(df,column_name)
+        return df  # Return unchanged if no valid algorithm is found
+
+
 
     def update_progress_bar(self, current_page):
         if total_pages > 0:
@@ -217,14 +226,29 @@ class ScraperApp(QtWidgets.QWidget):
     def perform_search(self):
         if self.current_df is not None:
             search_text = self.search_input.text()
-            selected_column = self.column_combobox.currentText() 
 
-            if search_text:  
-                search_results = self.search(self.current_df, selected_column, search_text)
-                if not search_results.empty:
-                    self.table_view.setModel(PandasModel(search_results))
-                else:
-                    QtWidgets.QMessageBox.information(self, "No Results", "No matches found.")
+            if search_text:  # Check if the search input is not empty
+                try:
+                    # Parse the search text for multiple column-value pairs
+                    pattern = r'"([^"]+)":"([^"]+)"'
+                    matches = re.findall(pattern, search_text)
+                    if not matches:
+                        raise ValueError("Invalid search format. Please use the format: \"column_name\":\"text\".")
+
+                    # Filter the DataFrame based on the parsed column-value pairs
+                    search_results = self.current_df
+                    for column_name, value in matches:
+                        if column_name in search_results.columns:
+                            search_results = self.search(search_results, column_name, value)
+                        else:
+                            raise ValueError(f"Column '{column_name}' does not exist in the DataFrame.")
+
+                    if not search_results.empty:
+                        self.table_view.setModel(PandasModel(search_results))  # Update table with search results
+                    else:
+                        QtWidgets.QMessageBox.information(self, "No Results", "No matches found.")
+                except ValueError as e:
+                    QtWidgets.QMessageBox.warning(self, "Warning", str(e))
             else:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Please enter a search term.")
 
