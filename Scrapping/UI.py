@@ -2,10 +2,11 @@ import sys
 import os
 import pandas as pd
 import threading
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from scrapper import start_scraping, pause_scraping, current_page, total_pages, scraper_signals  # Import signal
 from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort,counting_sort,radix_sort,bucket_sort
 import time
+
 class PandasModel(QtCore.QAbstractTableModel):
     def __init__(self, data=None):
         super().__init__()
@@ -41,13 +42,39 @@ class ScraperApp(QtWidgets.QWidget):
         self.setWindowTitle("Website Scraper")
         self.setGeometry(100, 100, 600, 400)
 
+        # Customize the appearance
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #def0eb;  /* Light Brown */
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 14px;
+            }
+            QPushButton {
+                background-color: #3b5446;  /* Brown color */
+                color: white;
+                padding: 10px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background-color: #3b5446;  /* Lighter brown on hover */
+            }
+            QLabel {
+                font-weight: bold;
+                font-size: 16px;
+            }
+            QProgressBar {
+                text-align: center;
+                color: black;
+                font-weight: bold;
+            }
+        """)
+
         # Layout
         self.layout = QtWidgets.QVBoxLayout(self)
 
         # Progress Bar
         self.progress_bar = QtWidgets.QProgressBar(self)
         self.layout.addWidget(self.progress_bar)
-
 
         self.is_scraping = False  # Indicates if scraping is active
         self.first_time_load = True  # Indicates if the table has been loaded for the first time
@@ -76,7 +103,6 @@ class ScraperApp(QtWidgets.QWidget):
         self.sort_button = QtWidgets.QPushButton("Sort Data", self)
         self.sort_button.clicked.connect(self.sort_data)
         self.layout.addWidget(self.sort_button)
-
 
         # Search Input and Button
         self.search_input = QtWidgets.QLineEdit(self)
@@ -203,8 +229,6 @@ class ScraperApp(QtWidgets.QWidget):
             return insertion_sort(df,column_name)
         return df  # Return unchanged if no valid algorithm is found
 
-
-
     def update_progress_bar(self, current_page):
         # Update the progress bar based on current_page and total_pages
         if total_pages > 0:
@@ -227,7 +251,6 @@ class ScraperApp(QtWidgets.QWidget):
             else:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Please enter a search term.")
 
-
     def search(self, df, column_name, text):
         return df[df[column_name].astype(str).str.contains(text, case=False, na=False)]
 
@@ -236,8 +259,6 @@ class ScraperApp(QtWidgets.QWidget):
             self.current_df = pd.read_csv("ebay.csv")  # Reload original DataFrame
             self.table_view.setModel(PandasModel(self.current_df))  # Update table with original data
             self.search_input.clear()  # Clear the search input field
-
-    
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

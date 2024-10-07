@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import threading
 from PyQt5 import QtWidgets, QtCore
-from scrapper import start_scraping, pause_scraping, current_page, total_pages  # Import functions and variables from scrapper.py
+from webscraper import start_scraping, pause_scraping, current_page, total_pages  # Import functions and variables from scrapper.py
 
 class PandasModel(QtCore.QAbstractTableModel):
     def __init__(self, data=None):
