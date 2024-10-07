@@ -4,7 +4,7 @@ import pandas as pd
 import threading
 from PyQt5 import QtWidgets, QtCore
 from scrapper import start_scraping, pause_scraping, current_page, total_pages, scraper_signals  # Import signal
-from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort
+from Algorithms import heap_sort,bubble_sort,quick_sort, merge_sort, selection_sort, insertion_sort,counting_sort,radix_sort,bucket_sort
 import time
 class PandasModel(QtCore.QAbstractTableModel):
     def __init__(self, data=None):
@@ -68,7 +68,7 @@ class ScraperApp(QtWidgets.QWidget):
 
         # Algorithm Selection ComboBox
         self.algorithm_combobox = QtWidgets.QComboBox(self)
-        self.algorithm_combobox.addItems(["Heap Sort", "Quick Sort", "Bubble Sort", "Insertion Sort", "Selection Sort", "Merge Sort"])  # Add more algorithms as needed
+        self.algorithm_combobox.addItems(["Heap Sort", "Quick Sort", "Bubble Sort", "Insertion Sort", "Selection Sort", "Merge Sort","Counting Sort","Bucket Sort","Radix Sort"])
         self.layout.addWidget(QtWidgets.QLabel("Select Sorting Algorithm:"))
         self.layout.addWidget(self.algorithm_combobox)
 
@@ -195,6 +195,12 @@ class ScraperApp(QtWidgets.QWidget):
             return merge_sort(df,column_name)
         elif algorithm =="insertion sort":
             return insertion_sort(df, column_name)
+        elif algorithm =="counting sort":
+            return heap_sort(df,column_name)
+        elif algorithm =="bucket sort":
+            return quick_sort(df,column_name)
+        elif algorithm =="radix sort":
+            return insertion_sort(df,column_name)
         return df  # Return unchanged if no valid algorithm is found
 
 
