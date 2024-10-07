@@ -84,7 +84,7 @@ def scrape():
                 "Product Name": Productnames,
                 "Price": Price,
                 "Miles": Miles,
-                "Dealername": Dealername,
+                "Dealer Name": Dealername,
                 "Rating": Rating,
                 "Location": Location,
                 "Reviews": Reviews

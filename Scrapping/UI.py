@@ -67,6 +67,14 @@ class ScraperApp(QtWidgets.QWidget):
                 color: black;
                 font-weight: bold;
             }
+            QPushButton:enabled {
+                background-color: #3b5446;
+                color: white;
+            }
+            QPushButton:disabled {
+                background-color: #6f8177;  /* Dimmed color for disabled */
+            color: white;
+            }
         """)
 
         self.layout = QtWidgets.QVBoxLayout(self)
