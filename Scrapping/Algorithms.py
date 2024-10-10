@@ -319,3 +319,21 @@ def create_sorted_dataframe(df, arr):
     sorted_indices = [index for _, index in arr]
     sorted_df = df.loc[sorted_indices].reset_index(drop=True)
     return sorted_df
+
+def merge_columns(df, column_names):
+
+    for col in column_names:
+        if col not in df.columns:
+            raise ValueError(f"Column '{col}' does not exist in the DataFrame.")
+
+    df['merged_column'] = df[column_names].astype(str).agg(''.join, axis=1)
+
+    df['merged_column'] = df['merged_column'].apply(convert_if_numeric)
+    
+    return df
+
+def convert_if_numeric(value):
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    return value
+
