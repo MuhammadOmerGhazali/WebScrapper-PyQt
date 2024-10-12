@@ -236,11 +236,11 @@ class ScraperApp(QtWidgets.QWidget):
             elif algorithm == "insertion sort":
                 df = insertion_sort(df, selectedColumns[0])
             elif algorithm == "counting sort":
-                df = merge_sort(df, selectedColumns[0])
+                df = counting_sort(df, selectedColumns[0])
             elif algorithm == "bucket sort":
-                df = quick_sort(df, selectedColumns[0])
+                df = bucket_sort(df, selectedColumns[0])
             elif algorithm == "radix sort":
-                df = insertion_sort(df, selectedColumns[0])
+                df = radix_sort(df, selectedColumns[0])
             elif algorithm == "shell sort":
                 df = shell_sort(df, selectedColumns[0])
             elif algorithm == "tim sort":
@@ -260,11 +260,11 @@ class ScraperApp(QtWidgets.QWidget):
             elif algorithm == "insertion sort":
                 df = insertion_sort(df, 'merged_column')
             elif algorithm == "counting sort":
-                df = merge_sort(df, 'merged_column')
+                df = counting_sort(df, 'merged_column')
             elif algorithm == "bucket sort":
-                df = quick_sort(df, 'merged_column')
+                df = bucket_sort(df, 'merged_column')
             elif algorithm == "radix sort":
-                df = insertion_sort(df, 'merged_column')
+                df = radix_sort(df, 'merged_column')
             elif algorithm == "shell sort":
                 df = shell_sort(df, 'merged_column')
             elif algorithm == "tim sort":
@@ -280,15 +280,15 @@ class ScraperApp(QtWidgets.QWidget):
         if self.current_df is not None:
             search_text = self.search_input.text()
 
-            if search_text:  # Check if the search input is not empty
+            if search_text:  
                 try:
-                    # Parse the search text for multiple column-value pairs
+                    
                     pattern = r'"([^"]+)":"([^"]+)"'
                     matches = re.findall(pattern, search_text)
                     if not matches:
                         raise ValueError("Invalid search format. Please use the format: \"column_name\":\"text\".")
 
-                    # Filter the DataFrame based on the parsed column-value pairs
+                    
                     search_results = self.current_df
                     for column_name, value in matches:
                         if column_name in search_results.columns:
@@ -305,6 +305,8 @@ class ScraperApp(QtWidgets.QWidget):
             else:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Please enter a search term.")
 
+    def search(self, df, column_name, text):
+        return df[df[column_name].astype(str).str.contains(text, case=False, na=False)]
 
     def reset_data(self):
         if os.path.exists("ebay.csv"):
